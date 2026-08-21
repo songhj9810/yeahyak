@@ -1,0 +1,17 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.attachment {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.attachmentIcon {
+  font-size: 12px;
+}

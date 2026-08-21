@@ -1,0 +1,6 @@
+.upload :global(.ant-upload),
+.upload :global(.ant-upload-list-item-container) {
+  width: 100% !important;
+  aspect-ratio: 1 / 1;
+  height: auto !important;
+}

@@ -1,0 +1,14 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.container :global(.tiptap) {
+  min-height: calc(
+    100vh - 64px - 24px - 32px - 24px - 32px - 24px - 40px - 24px - 32px -
+      24px - 24px - 75px - 24px - 24px - 32px - 24px
+  );
+}
