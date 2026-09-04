@@ -1,0 +1,26 @@
+# 가상환경
+.venv/
+
+# 개발/테스트 관련
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# ChromaDB (런타임 생성, 볼륨 마운트로 관리)
+chroma_db/
+
+# 환경변수
+.env
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# 문서
+README.md

@@ -1,0 +1,146 @@
+services:
+  # ==========================================
+  # Frontend (React + Caddy, 자동 HTTPS)
+  # ==========================================
+  caddy:
+    image: ghcr.io/songhj9810/yeahyak-frontend:latest
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    container_name: yeahyak-caddy
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+      ai:
+        condition: service_healthy
+    networks:
+      - yeahyak-net
+
+  # ==========================================
+  # Backend (Spring Boot)
+  # ==========================================
+  backend:
+    image: ghcr.io/songhj9810/yeahyak-backend:latest
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: yeahyak-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      FLASK_URL: http://ai:5000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO /dev/null http://localhost:8080/actuator/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - yeahyak-net
+
+  # ==========================================
+  # AI (Flask)
+  # ==========================================
+  ai:
+    image: ghcr.io/songhj9810/yeahyak-ai:latest
+    build:
+      context: ai
+      dockerfile: Dockerfile
+    container_name: yeahyak-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - chroma_data:/app/data
+    depends_on:
+      redis:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - yeahyak-net
+
+  # ==========================================
+  # Database (MySQL 8.0)
+  # ==========================================
+  db:
+    image: mysql:8.0
+    container_name: yeahyak-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - yeahyak-net
+
+  # ==========================================
+  # Cache (Redis 8)
+  # ==========================================
+  redis:
+    image: redis:8-alpine
+    container_name: yeahyak-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - yeahyak-net
+
+# ==========================================
+# Volumes
+# ==========================================
+volumes:
+  mysql_data:
+  redis_data:
+  chroma_data:
+  caddy_data:
+  caddy_config:
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  yeahyak-net:
