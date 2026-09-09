@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from flask import Flask, jsonify, request
+from flask import Flask, g, jsonify, request
 
 from app import register_error_handlers
 from app.auth import jwt_required
@@ -35,23 +35,25 @@ def summary_api():
 @app.route("/ai/chatbot/faq", methods=["POST"])
 @jwt_required
 def faq_api():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     question = data.get("question")
-    session_id = data.get("session_id")
-    if not question or not session_id:
+    client_session_id = data.get("session_id")
+    if not question or not client_session_id:
         return ApiResponse.error("요청 데이터가 없습니다.", 400)
-    return ApiResponse.ok({"answer": answer_faq(question, session_id)})
+    scoped_session_id = f"{g.user_id}:faq:{client_session_id}"
+    return ApiResponse.ok({"answer": answer_faq(question, scoped_session_id)})
 
 
 @app.route("/ai/chatbot/qna", methods=["POST"])
 @jwt_required
 def qna_api():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     question = data.get("question")
-    session_id = data.get("session_id")
-    if not question or not session_id:
+    client_session_id = data.get("session_id")
+    if not question or not client_session_id:
         return ApiResponse.error("요청 데이터가 없습니다.", 400)
-    return ApiResponse.ok({"answer": answer_qna(question, session_id)})
+    scoped_session_id = f"{g.user_id}:qna:{client_session_id}"
+    return ApiResponse.ok({"answer": answer_qna(question, scoped_session_id)})
 
 
 @app.route("/ai/forecast", methods=["POST"])

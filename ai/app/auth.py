@@ -26,7 +26,9 @@ def jwt_required(f):
 
             # Flask의 g 객체에 사용자 정보 저장 (단일 요청 동안 유지)
             sub = payload.get("sub")
-            g.user_id = int(sub) if sub is not None else None
+            if sub is None:
+                raise jwt.InvalidTokenError
+            g.user_id = int(sub)
             g.email = payload.get("email")
             g.role = payload.get("role")
         except jwt.ExpiredSignatureError:
