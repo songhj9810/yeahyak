@@ -1,0 +1,23 @@
+{$DOMAIN} {
+	encode gzip
+
+	@api path /api/*
+	handle @api {
+		reverse_proxy backend:8080
+	}
+
+	@ai path /ai/*
+	handle @ai {
+		reverse_proxy ai:5000 {
+			transport http {
+				response_header_timeout 120s
+			}
+		}
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

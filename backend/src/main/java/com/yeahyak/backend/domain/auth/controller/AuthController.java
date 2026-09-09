@@ -12,6 +12,7 @@ import com.yeahyak.backend.global.security.CustomUserDetails;
 import com.yeahyak.backend.global.security.JwtProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,9 @@ public class AuthController {
     private final AuthService authService;
     private final InvitationService invitationService;
     private final JwtProvider jwtProvider;
+
+    @Value("${app.cookie-secure}")
+    private boolean cookieSecure;
 
     // 관리자 로그인
     @PostMapping("/login/admin")
@@ -115,7 +119,7 @@ public class AuthController {
     private ResponseCookie buildRefreshCookie(String value, long maxAge) {
         return ResponseCookie.from("refreshToken", value)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .sameSite("Lax")
                 .path("/")
                 .maxAge(maxAge)
