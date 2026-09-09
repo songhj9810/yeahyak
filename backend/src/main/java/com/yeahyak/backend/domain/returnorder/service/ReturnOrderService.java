@@ -2,6 +2,7 @@ package com.yeahyak.backend.domain.returnorder.service;
 
 import com.yeahyak.backend.domain.order.entity.Order;
 import com.yeahyak.backend.domain.order.entity.OrderItem;
+import com.yeahyak.backend.domain.order.entity.OrderStatus;
 import com.yeahyak.backend.domain.order.repository.OrderItemRepository;
 import com.yeahyak.backend.domain.order.repository.OrderRepository;
 import com.yeahyak.backend.domain.returnorder.dto.request.ReturnOrderCreateRequest;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,10 +59,20 @@ public class ReturnOrderService {
     public void createReturnOrder(Long userId, ReturnOrderCreateRequest request) {
         Pharmacy pharmacy = pharmacyRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PHARMACY_NOT_FOUND));
-        Order order = orderRepository.findById(request.orderId())
+        Order order = orderRepository.findByIdWithLock(request.orderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
         if (!order.getPharmacy().getId().equals(pharmacy.getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+        if (order.getStatus() != OrderStatus.COMPLETED) {
+            throw new CustomException(ErrorCode.UNPROCESSABLE_RETURN_ORDER);
+        }
+
+        List<Long> orderItemIds = request.returnOrderItems().stream()
+                .map(item -> item.orderItemId())
+                .toList();
+        if (new HashSet<>(orderItemIds).size() != orderItemIds.size()) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         ReturnOrder returnOrder = ReturnOrder.create(order, request.returnReason());
@@ -71,9 +83,6 @@ public class ReturnOrderService {
                 .collect(Collectors.toMap(OrderItem::getId, oi -> oi));
 
         // 반품 가능 수량 일괄 조회 (N+1 방지, REJECTED 상태 제외)
-        List<Long> orderItemIds = request.returnOrderItems().stream()
-                .map(item -> item.orderItemId())
-                .toList();
         Map<Long, Integer> returnableMap = orderItemRepository.findReturnableQuantities(orderItemIds)
                 .stream()
                 .collect(Collectors.toMap(
@@ -100,7 +109,7 @@ public class ReturnOrderService {
     // 반품 승인
     @Transactional
     public void approveReturnOrder(Long returnOrderId) {
-        ReturnOrder returnOrder = returnOrderRepository.findById(returnOrderId)
+        ReturnOrder returnOrder = returnOrderRepository.findByIdWithLock(returnOrderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RETURN_ORDER_NOT_FOUND));
         returnOrder.approve();
 
@@ -119,7 +128,7 @@ public class ReturnOrderService {
     // 반품 반려
     @Transactional
     public void rejectReturnOrder(Long returnOrderId, ReturnOrderRejectRequest request) {
-        ReturnOrder returnOrder = returnOrderRepository.findById(returnOrderId)
+        ReturnOrder returnOrder = returnOrderRepository.findByIdWithLock(returnOrderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RETURN_ORDER_NOT_FOUND));
         returnOrder.reject(request.rejectReason());
     }
@@ -127,7 +136,7 @@ public class ReturnOrderService {
     // 반품 처리
     @Transactional
     public void processReturnOrder(Long returnOrderId) {
-        ReturnOrder returnOrder = returnOrderRepository.findById(returnOrderId)
+        ReturnOrder returnOrder = returnOrderRepository.findByIdWithLock(returnOrderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RETURN_ORDER_NOT_FOUND));
         returnOrder.process();
     }
@@ -135,7 +144,7 @@ public class ReturnOrderService {
     // 반품 완료
     @Transactional
     public void completeReturnOrder(Long returnOrderId) {
-        ReturnOrder returnOrder = returnOrderRepository.findById(returnOrderId)
+        ReturnOrder returnOrder = returnOrderRepository.findByIdWithLock(returnOrderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RETURN_ORDER_NOT_FOUND));
         returnOrder.complete();
 

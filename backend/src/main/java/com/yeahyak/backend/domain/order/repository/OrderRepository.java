@@ -3,15 +3,25 @@ package com.yeahyak.backend.domain.order.repository;
 import com.yeahyak.backend.domain.order.entity.Order;
 import com.yeahyak.backend.domain.order.entity.OrderStatus;
 import com.yeahyak.backend.domain.user.entity.PharmacyRegion;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.id = :id
+            """)
+    Optional<Order> findByIdWithLock(@Param("id") Long id);
+
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     long countByStatusAndCreatedAtBetween(OrderStatus status, LocalDateTime start, LocalDateTime end);

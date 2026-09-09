@@ -1,6 +1,8 @@
 package com.yeahyak.backend.domain.returnorder.entity;
 
 import com.yeahyak.backend.domain.order.entity.OrderItem;
+import com.yeahyak.backend.global.exception.CustomException;
+import com.yeahyak.backend.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,6 +38,9 @@ public class ReturnOrderItem {
     }
 
     public static ReturnOrderItem create(ReturnOrder returnOrder, OrderItem orderItem, Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
         return ReturnOrderItem.builder()
                 .returnOrder(returnOrder)
                 .orderItem(orderItem)

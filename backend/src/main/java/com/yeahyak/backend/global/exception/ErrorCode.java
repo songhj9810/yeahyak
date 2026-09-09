@@ -58,6 +58,9 @@ public enum ErrorCode {
     // Forecast
     SALES_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "판매 이력을 찾을 수 없습니다"),
 
+    // Lock
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요."),
+
     // Common
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "BAD_REQUEST"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"),

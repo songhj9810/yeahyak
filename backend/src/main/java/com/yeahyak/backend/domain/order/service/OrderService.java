@@ -81,7 +81,7 @@ public class OrderService {
     // 발주 취소
     @Transactional
     public void cancelOrder(Long orderId, Long userId, UserRole role) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         OrderCanceledBy canceledBy;
@@ -118,7 +118,7 @@ public class OrderService {
     // 발주 처리
     @Transactional
     public void processOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
         order.process();
     }
@@ -126,7 +126,7 @@ public class OrderService {
     // 발주 완료
     @Transactional
     public void completeOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
         order.complete();
 

@@ -2,6 +2,7 @@ package com.yeahyak.backend.global.exception;
 
 import com.yeahyak.backend.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -35,6 +36,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(message));
+    }
+
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<ApiResponse<?>> handleLockingFailure(PessimisticLockingFailureException e) {
+        log.warn("Locking Failure: ", e);
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ErrorCode.LOCK_ACQUISITION_FAILED));
     }
 
     @ExceptionHandler(Exception.class)
