@@ -116,6 +116,7 @@ public class AuthService {
         }
 
         user.updatePassword(passwordEncoder.encode(request.newPassword()));
+        redisTemplate.delete("REFRESH:" + user.getId());
         redisTemplate.delete("PASSWORD_RESET:" + request.token());
     }
 
