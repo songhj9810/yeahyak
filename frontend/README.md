@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 기술 스택
 
-Currently, two official plugins are available:
+| 분류                 | 기술                      |
+| -------------------- | ------------------------- |
+| 언어                 | TypeScript 6.0            |
+| UI 라이브러리        | React 19                  |
+| 빌드                 | Vite                      |
+| UI 컴포넌트          | Ant Design · Ant Design X |
+| 서버 상태 관리       | TanStack Query            |
+| 클라이언트 상태 관리 | Zustand                   |
+| 라우팅               | React Router DOM          |
+| HTTP 클라이언트      | Axios                     |
+| WYSIWYG 에디터       | TipTap                    |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 프로젝트 구조
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+frontend/
+├── src/
+│　　 ├── main.tsx # 앱 진입점
+│　　 ├── app/
+│　　 │　　 ├── layouts/
+│　　 │　　 ├── providers/
+│　　 │　　 ├── router/ # 라우트, 접근 제어 및 로더
+│　　 │　　 └── styles/
+│　　 ├── features/
+│　　 │　　 ├── auth/
+│　　 │　　 ├── invitation/
+│　　 │　　 ├── admin/
+│　　 │　　 ├── pharmacy/
+│　　 │　　 │　　 ├── api/        # API
+│　　 │　　 │　　 ├── components/ # UI 컴포넌트
+│　　 │　　 │　　 ├── hooks/      # 커스텀 훅
+│　　 │　　 │　　 └── types/      # 요청·응답 타입
+│　　 │　　 ├── wallet/
+│　　 │　　 ├── product/
+│　　 │　　 ├── inventory/
+│　　 │　　 ├── order/
+│　　 │　　 ├── return/
+│　　 │　　 ├── notice/
+│　　 │　　 ├── forecast/
+│　　 │　　 └── chatbot/
+│　　 ├── pages/
+│　　 │　　 ├── auth/
+│　　 │　　 ├── hq/     # 본사 사용자 페이지
+│　　 │　　 ├── branch/ # 가맹점 사용자 페이지
+│　　 │　　 ├── common/
+│　　 │　　 └── error/
+│　　 └── shared/
+│　　 　　　 ├── api/ # Axios 클라이언트
+│　　 　　　 ├── config/
+│　　 　　　 └── lib/
+├── Caddyfile # 정적 파일 서빙 및 API 리버스 프록시
+└── Dockerfile
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 실행 방법
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Node.js 및 [pnpm](https://pnpm.io/)
+- 실행 중인 Backend 서버
+- 실행 중인 AI 서버
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd frontend
+pnpm install
+pnpm dev
 ```
+
+개발 서버가 실행되면 [http://localhost:5173](http://localhost:5173)에서 확인할 수 있습니다.
+
+> 개발 환경에서 `/api/*` 요청은 Backend 서버로, `/ai/*` 요청은 AI 서버로 자동 프록시됩니다.
