@@ -1,3 +1,4 @@
+export { getPharmacyStocks } from "./api/getPharmacyInventory"
 export * from "./components/HqInventoryDrawer"
 export * from "./components/PharmacyInventoryDrawer"
 export * from "./components/StockAdjustModal"
