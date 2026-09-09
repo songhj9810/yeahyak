@@ -9,22 +9,19 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_redis import RedisChatMessageHistory
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-CHROMA_PATH = "chroma_db"
 FAQ_PATH = "data/faq.txt"
+CHROMA_PATH = "data/chroma_db"
+CHROMA_DB_FILE = os.path.join(CHROMA_PATH, "chroma.sqlite3")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
-vectorstore = None
-if os.path.exists(CHROMA_PATH):
+if os.path.exists(CHROMA_DB_FILE):
     vectorstore = Chroma(embedding_function=embeddings, persist_directory=CHROMA_PATH)
-
-
-def ingest_faq():
-    """FAQ를 ChromaDB에 저장합니다."""
-    global vectorstore
+else:
+    # FAQ 데이터 로드 및 벡터 스토어 생성
     loader = TextLoader(FAQ_PATH, encoding="utf-8")
     docs = loader.load()
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
